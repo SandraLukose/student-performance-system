@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, session, redirect, url_for
 import matplotlib.pyplot as plt
 import io
 import base64
+import os
 
 # ---------------- FLASK APP ----------------
 app = Flask(__name__)
@@ -407,6 +408,8 @@ def admin():
 # =====================================================
 # ================= RUN APP ===========================
 # =====================================================
-
 if __name__ == "__main__":
-    app.run(debug=True, port=8081)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
+
+
