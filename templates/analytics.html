@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Analytics Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="container">
+    <h2>Analytics Dashboard</h2>
+
+    <p><strong>Average Predicted Marks:</strong> {{ avg_marks }}</p>
+
+    <img src="data:image/png;base64,{{ graph_url }}" alt="Analytics Graph">
+
+</div>
+
+</body>
+</html>

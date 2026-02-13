@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Performance History | Student Performance System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="background-decoration">
+    <div class="circle circle-1"></div>
+    <div class="circle circle-2"></div>
+    <div class="circle circle-3"></div>
+</div>
+
+<div class="history-container">
+    <!-- Header Section -->
+    <div class="history-header">
+        <div class="header-icon-wrapper">
+            <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="20" x2="12" y2="10"/>
+                <line x1="18" y1="20" x2="18" y2="4"/>
+                <line x1="6" y1="20" x2="6" y2="16"/>
+            </svg>
+        </div>
+        <h1>My Performance History</h1>
+        <p class="history-subtitle">Track your academic progress over time</p>
+    </div>
+
+    {% if history_data %}
+        <!-- Statistics Cards -->
+        <div class="history-stats">
+            <div class="history-stat-card">
+                <div class="stat-icon-wrapper stat-icon-blue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <h3 id="totalPredictions">{{ history_data|length }}</h3>
+                    <p>Total Predictions</p>
+                </div>
+            </div>
+
+            <div class="history-stat-card">
+                <div class="stat-icon-wrapper stat-icon-green">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                        <polyline points="17 6 23 6 23 12"/>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <h3 id="avgScore">--</h3>
+                    <p>Average Score</p>
+                </div>
+            </div>
+
+            <div class="history-stat-card">
+                <div class="stat-icon-wrapper stat-icon-purple">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <h3 id="highestScore">--</h3>
+                    <p>Highest Score</p>
+                </div>
+            </div>
+
+            <div class="history-stat-card">
+                <div class="stat-icon-wrapper stat-icon-orange">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="20" x2="18" y2="10"/>
+                        <line x1="12" y1="20" x2="12" y2="4"/>
+                        <line x1="6" y1="20" x2="6" y2="14"/>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <h3 id="lowestScore">--</h3>
+                    <p>Lowest Score</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart Section -->
+        <div class="chart-section">
+            <div class="chart-header">
+                <h2>Performance Trend</h2>
+                <p>Your score progression over time</p>
+            </div>
+            <div class="chart-container">
+                <canvas id="performanceChart"></canvas>
+            </div>
+        </div>
+
+        <!-- History Table -->
+        <div class="history-table-wrapper">
+            <div class="table-header">
+                <h2>Prediction History</h2>
+
+                </button>
+            </div>
+            
+            <div class="table-wrapper">
+                <table class="history-table" id="historyTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Date & Time</th>
+                            <th>Predicted Score</th>
+                            <th>Performance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for marks, date in history_data %}
+                        <tr data-score="{{ marks }}">
+                            <td><span class="row-number">{{ loop.index }}</span></td>
+                            <td>
+                                <div class="date-cell">
+                                    <svg class="cell-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                        <line x1="16" y1="2" x2="16" y2="6"/>
+                                        <line x1="8" y1="2" x2="8" y2="6"/>
+                                        <line x1="3" y1="10" x2="21" y2="10"/>
+                                    </svg>
+                                    {{ date }}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="score-value">{{ "%.2f"|format(marks) }}</span>
+                            </td>
+                            <td>
+                                {% if marks >= 80 %}
+                                    <span class="performance-badge badge-excellent">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                        </svg>
+                                        Excellent
+                                    </span>
+                                {% elif marks >= 60 %}
+                                    <span class="performance-badge badge-good">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                        Good
+                                    </span>
+                                {% else %}
+                                    <span class="performance-badge badge-needs-improvement">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                                            <line x1="12" y1="9" x2="12" y2="13"/>
+                                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                        </svg>
+                                        Needs Improvement
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Back Button -->
+        <div class="action-buttons">
+            <a href="/" class="back-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="19" y1="12" x2="5" y2="12"/>
+                    <polyline points="12 19 5 12 12 5"/>
+                </svg>
+                Back to Predictor
+            </a>
+        </div>
+
+    {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="20" x2="12" y2="10"/>
+                    <line x1="18" y1="20" x2="18" y2="4"/>
+                    <line x1="6" y1="20" x2="6" y2="16"/>
+                </svg>
+            </div>
+            <h2>No Performance History Yet</h2>
+            <p>You haven't made any predictions yet. Start by making your first prediction to track your academic progress.</p>
+            <a href="/" class="btn btn-primary">
+                <span>Make First Prediction</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                    <polyline points="12 5 19 12 12 19"/>
+                </svg>
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+{% if history_data %}
+
+const scores = {{ scores | tojson }};
+const dates = {{ dates | tojson }};
+
+// Calculate statistics
+function calculateStats() {
+    if (scores.length === 0) return;
+
+    const total = scores.reduce((a, b) => a + b, 0);
+    const avg = total / scores.length;
+    const highest = Math.max(...scores);
+    const lowest = Math.min(...scores);
+
+    document.getElementById('avgScore').textContent = avg.toFixed(2);
+    document.getElementById('highestScore').textContent = highest.toFixed(2);
+    document.getElementById('lowestScore').textContent = lowest.toFixed(2);
+}
+
+// Create performance chart
+function createChart() {
+    const ctx = document.getElementById('performanceChart');
+    if (!ctx) return;
+
+    const labels = dates.map(date => date.split(' ')[0]);
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Predicted Score',
+                data: scores,
+                borderColor: 'rgb(102, 126, 234)',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+}
+function exportHistoryToCSV() {
+
+    const table = document.getElementById("historyTable");
+    if (!table) return;
+
+    let csv = [];
+
+    // Add headers
+    csv.push(["No.", "Date & Time", "Predicted Score", "Performance"].join(","));
+
+    const rows = table.querySelectorAll("tbody tr");
+
+    rows.forEach((row, index) => {
+        const cols = row.querySelectorAll("td");
+
+        const rowData = [
+            index + 1,
+            cols[1].innerText.trim(),
+            cols[2].innerText.trim(),
+            cols[3].innerText.trim()
+        ];
+
+        csv.push(rowData.map(value => `"${value.replace(/"/g, '""')}"`).join(","));
+    });
+
+    const csvContent = csv.join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "my_performance_history_" + new Date().toISOString().split('T')[0] + ".csv";
+
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    URL.revokeObjectURL(url);
+}
+
+// Initialize
+calculateStats();
+createChart();
+
+{% endif %}
+</script>
+
+
+</body>
+</html>

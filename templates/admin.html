@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Student Performance Analytics</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Enhanced Animations and Effects */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes shimmer {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        /* Enhanced Stat Cards */
+        .stat-card {
+            animation: fadeInUp 0.6s ease-out backwards;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:nth-child(1) { 
+            animation-delay: 0.1s;
+            --gradient-start: #667eea;
+            --gradient-end: #764ba2;
+        }
+        .stat-card:nth-child(2) { 
+            animation-delay: 0.2s;
+            --gradient-start: #f093fb;
+            --gradient-end: #f5576c;
+        }
+        .stat-card:nth-child(3) { 
+            animation-delay: 0.3s;
+            --gradient-start: #4facfe;
+            --gradient-end: #00f2fe;
+        }
+        .stat-card:nth-child(4) { 
+            animation-delay: 0.4s;
+            --gradient-start: #43e97b;
+            --gradient-end: #38f9d7;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+        }
+
+        .stat-icon {
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover .stat-icon {
+            transform: rotate(10deg) scale(1.1);
+        }
+
+        .stat-content h3 {
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Enhanced Table Rows */
+        .modern-table tbody tr:hover {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+            transform: scale(1.01);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .progress-bar {
+            animation: shimmer 2s infinite;
+        }
+
+        .predicted-score {
+            font-size: 20px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Enhanced Badges */
+        .badge-high {
+            background: linear-gradient(135deg, rgba(67, 233, 123, 0.2), rgba(56, 249, 215, 0.2));
+        }
+
+        .badge-medium {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.2));
+        }
+
+        .badge-low {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.2));
+        }
+
+        .id-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        /* Enhanced Export Button */
+        .export-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .export-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.6);
+        }
+
+        /* Enhanced Filter Buttons */
+        .filter-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Enhanced Container Effects */
+        .admin-container {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .table-wrapper,
+        .table-controls,
+        .admin-footer {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+        }
+
+        .analytics-card {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+
+        .analytics-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(243, 244, 246, 0.5);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+    </style>
+</head>
+<body>
+
+<div class="background-decoration">
+    <div class="circle circle-1"></div>
+    <div class="circle circle-2"></div>
+    <div class="circle circle-3"></div>
+</div>
+
+<div class="admin-container">
+    <!-- Header Section -->
+    <div class="admin-header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="admin-icon-wrapper">
+                    <svg class="admin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1>Admin Dashboard</h1>
+                    <p class="dashboard-subtitle">Student Performance Analytics & Predictions</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="export-btn" onclick="exportToCSV()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Export CSV
+                </button>
+            </div>
+        </div>
+    </div>
+<a href="{{ url_for('landing') }}" class="landing-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M15 18l-6-6 6-6"/>
+    </svg>
+    Back Home
+</a>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 010 7.75"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <h3 id="totalStudents">{{ records|length }}</h3>
+                <p>Total Predictions</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <h3 id="avgPerformance">--</h3>
+                <p>Avg. Predicted Score</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-purple">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <h3 id="avgStudyHours">--</h3>
+                <p>Avg. Study Hours</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-orange">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="1" x2="12" y2="23"/>
+                    <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <h3 id="avgAttendance">--</h3>
+                <p>Avg. Attendance</p>
+            </div>
+        </div>
+    </div>
+
+{% if graph_url or attendance_graph or internal_graph or pie_graph or trend_graph or heat_graph %}
+<!-- ================= ANALYTICS SECTION ================= -->
+<div class="analytics-grid">
+
+    {% if graph_url %}
+    <div class="analytics-card">
+        <h3>Study Hours vs Marks</h3>
+        <img src="data:image/png;base64,{{ graph_url }}">
+    </div>
+    {% endif %}
+
+    {% if attendance_graph %}
+    <div class="analytics-card">
+        <h3>Attendance vs Performance</h3>
+        <img src="data:image/png;base64,{{ attendance_graph }}">
+    </div>
+    {% endif %}
+
+    {% if internal_graph %}
+    <div class="analytics-card">
+        <h3>Internal Marks Impact</h3>
+        <img src="data:image/png;base64,{{ internal_graph }}">
+    </div>
+    {% endif %}
+
+    {% if pie_graph %}
+    <div class="analytics-card">
+        <h3>Performance Distribution</h3>
+        <img src="data:image/png;base64,{{ pie_graph }}">
+    </div>
+    {% endif %}
+
+    {% if trend_graph %}
+    <div class="analytics-card full-width">
+        <h3>Performance Trend Over Time</h3>
+        <img src="data:image/png;base64,{{ trend_graph }}">
+    </div>
+    {% endif %}
+
+    {% if heat_graph %}
+    <div class="analytics-card full-width">
+        <h3>Study Hours vs Attendance Heatmap</h3>
+        <img src="data:image/png;base64,{{ heat_graph }}">
+    </div>
+    {% endif %}
+
+</div>
+{% endif %}
+
+    <!-- Search and Filter Section -->
+    <div class="table-controls">
+        <div class="search-box">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input type="text" id="searchInput" placeholder="Search by ID, marks, or date..." onkeyup="filterTable()">
+        </div>
+        
+        <div class="filter-buttons">
+<button class="filter-btn active" onclick="filterByPerformance('all', this)">All</button>
+<button class="filter-btn" onclick="filterByPerformance('high', this)">High (≥80)</button>
+<button class="filter-btn" onclick="filterByPerformance('medium', this)">Medium (60-79)</button>
+<button class="filter-btn" onclick="filterByPerformance('low', this)">Low (<60)</button>
+
+        </div>
+    </div>
+
+    <!-- Enhanced Table -->
+    <div class="table-wrapper">
+        <table class="modern-table" id="predictionsTable">
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0)">
+                        ID
+                        <svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14M5 12l7 7 7-7"/>
+                        </svg>
+                    </th>
+                    <th onclick="sortTable(1)">
+                        Study Hours
+                        <svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14M5 12l7 7 7-7"/>
+                        </svg>
+                    </th>
+                    <th onclick="sortTable(2)">
+                        Attendance (%)
+                        <svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14M5 12l7 7 7-7"/>
+                        </svg>
+                    </th>
+                    <th onclick="sortTable(3)">
+                        Internal Marks
+                        <svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14M5 12l7 7 7-7"/>
+                        </svg>
+                    </th>
+                    <th onclick="sortTable(4)">
+                        Predicted Score
+                        <svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14M5 12l7 7 7-7"/>
+                        </svg>
+                    </th>
+                    <th onclick="sortTable(5)">
+                        Created At
+                        <svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14M5 12l7 7 7-7"/>
+                        </svg>
+                    </th>
+                    <th>Performance</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in records %}
+                <tr data-predicted="{{ row[4] }}">
+                    <td><span class="id-badge">#{{ row[0] }}</span></td>
+                    <td>
+                        <div class="data-cell">
+                            <svg class="cell-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            {{ "%.1f"|format(row[1]) }} hrs
+                        </div>
+                    </td>
+                    <td>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" data-width="{{ row[2] }}"></div>
+                            <span class="progress-text">{{ row[2] }}%</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="marks-badge">{{ row[3] }}/20</span>
+                    </td>
+                    <td>
+                        <span class="predicted-score">{{ "%.2f"|format(row[4]) }}</span>
+                    </td>
+                    <td>
+                        <div class="date-cell">
+                            <svg class="cell-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                            {{ row[5] }}
+                        </div>
+                    </td>
+                    <td>
+                        {% if row[4] >= 80 %}
+                            <span class="performance-badge badge-high">Excellent</span>
+                        {% elif row[4] >= 60 %}
+                            <span class="performance-badge badge-medium">Good</span>
+                        {% else %}
+                            <span class="performance-badge badge-low">Needs Improvement</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if records|length == 0 %}
+        <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 11l3 3L22 4"/>
+                <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+            </svg>
+            <h3>No Predictions Yet</h3>
+            <p>Student predictions will appear here once they submit the form.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Footer -->
+    <div class="admin-footer">
+        <p>Last updated: <span id="lastUpdated"></span></p>
+        <p>Total Records: <strong>{{ records|length }}</strong></p>
+    </div>
+</div>
+
+<script>
+    // Apply dynamic progress bar widths safely
+    document.addEventListener("DOMContentLoaded", function () {
+        const bars = document.querySelectorAll(".progress-bar");
+        bars.forEach((bar, index) => {
+            const width = bar.getAttribute("data-width");
+            setTimeout(() => {
+                bar.style.width = width + "%";
+            }, index * 100);
+        });
+    });
+
+    function calculateStats() {
+        const table = document.getElementById('predictionsTable');
+        const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+        
+        if (rows.length === 0) return;
+        
+        let totalPredicted = 0;
+        let totalStudyHours = 0;
+        let totalAttendance = 0;
+        
+        for (let row of rows) {
+            const cells = row.getElementsByTagName('td');
+            totalStudyHours += parseFloat(cells[1].textContent);
+            totalAttendance += parseFloat(cells[2].querySelector('.progress-text').textContent);
+            totalPredicted += parseFloat(cells[4].textContent);
+        }
+        
+        const count = rows.length;
+        document.getElementById('avgPerformance').textContent = (totalPredicted / count).toFixed(2);
+        document.getElementById('avgStudyHours').textContent = (totalStudyHours / count).toFixed(1) + ' hrs';
+        document.getElementById('avgAttendance').textContent = (totalAttendance / count).toFixed(1) + '%';
+    }
+    
+    // Search/Filter functionality
+    function filterTable() {
+        const input = document.getElementById('searchInput');
+        const filter = input.value.toLowerCase();
+        const table = document.getElementById('predictionsTable');
+        const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+        
+        for (let row of rows) {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(filter) ? '' : 'none';
+        }
+    }
+function filterByPerformance(level, btn) {
+    const rows = document.getElementById('predictionsTable')
+        .getElementsByTagName('tbody')[0]
+        .getElementsByTagName('tr');
+
+    const buttons = document.querySelectorAll('.filter-btn');
+
+    buttons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    for (let row of rows) {
+        const predicted = parseFloat(row.getAttribute('data-predicted'));
+        let show = true;
+
+        if (level === 'high') show = predicted >= 80;
+        else if (level === 'medium') show = predicted >= 60 && predicted < 80;
+        else if (level === 'low') show = predicted < 60;
+
+        row.style.display = show ? '' : 'none';
+    }
+}
+
+    
+    // Sort table
+    let sortDirection = {};
+    function sortTable(columnIndex) {
+        const table = document.getElementById('predictionsTable');
+        const tbody = table.getElementsByTagName('tbody')[0];
+        const rows = Array.from(tbody.getElementsByTagName('tr'));
+        
+        // Toggle sort direction
+        sortDirection[columnIndex] = !sortDirection[columnIndex];
+        const isAsc = sortDirection[columnIndex];
+        
+        rows.sort((a, b) => {
+            let aVal = a.getElementsByTagName('td')[columnIndex].textContent.trim();
+            let bVal = b.getElementsByTagName('td')[columnIndex].textContent.trim();
+            
+            // Try to parse as number
+            const aNum = parseFloat(aVal);
+            const bNum = parseFloat(bVal);
+            
+            if (!isNaN(aNum) && !isNaN(bNum)) {
+                return isAsc ? aNum - bNum : bNum - aNum;
+            }
+            
+            return isAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+        });
+        
+        // Re-append sorted rows
+        rows.forEach(row => tbody.appendChild(row));
+        
+        // Update sort icons
+        document.querySelectorAll('.sort-icon').forEach(icon => icon.style.opacity = '0.3');
+        document.querySelectorAll('th')[columnIndex].querySelector('.sort-icon').style.opacity = '1';
+    }
+    
+    // Export to CSV
+    function exportToCSV() {
+        const table = document.getElementById('predictionsTable');
+        const rows = table.querySelectorAll('tr');
+        let csv = [];
+        
+        for (let row of rows) {
+            let cols = row.querySelectorAll('td, th');
+            let csvRow = [];
+            for (let i = 0; i < cols.length - 1; i++) { // Exclude last column (Performance badge)
+                csvRow.push('"' + cols[i].textContent.trim().replace(/"/g, '""') + '"');
+            }
+            csv.push(csvRow.join(','));
+        }
+        
+        const csvContent = csv.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'student_predictions_' + new Date().toISOString().split('T')[0] + '.csv';
+        a.click();
+    }
+    
+    // Set last updated time
+    document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
+    
+    // Calculate stats on page load
+    calculateStats();
+</script>
+
+</body>
+</html>
